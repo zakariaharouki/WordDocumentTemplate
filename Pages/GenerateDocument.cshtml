@@ -1,0 +1,250 @@
+﻿@page
+@model WordDocumentTemplate.Pages.GenerateDocumentModel
+@{
+    ViewData["Title"] = "Generate Document";
+}
+
+<h1>Generate Resume Document</h1>
+
+<form method="post" id="resumeForm">
+    <!-- Personal Information -->
+    <div class="form-group">
+        <label asp-for="ResumeData.FullName"></label>
+        <input asp-for="ResumeData.FullName" class="form-control" />
+        <span asp-validation-for="ResumeData.FullName" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="ResumeData.Title"></label>
+        <input asp-for="ResumeData.Title" class="form-control" />
+        <span asp-validation-for="ResumeData.Title" class="text-danger"></span>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label asp-for="ResumeData.City"></label>
+                <input asp-for="ResumeData.City" class="form-control" />
+                <span asp-validation-for="ResumeData.City" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label asp-for="ResumeData.Phone"></label>
+                <input asp-for="ResumeData.Phone" class="form-control" />
+                <span asp-validation-for="ResumeData.Phone" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="ResumeData.Email"></label>
+        <input asp-for="ResumeData.Email" class="form-control" />
+        <span asp-validation-for="ResumeData.Email" class="text-danger"></span>
+    </div>
+
+    <!-- Experiences Section -->
+    <h3>Work Experience</h3>
+    <div id="experiences">
+        @for (int i = 0; i < Model.ResumeData.Experiences.Count; i++)
+        {
+            <div class="experience-entry card mb-3">
+                <div class="card-body">
+                    <div class="form-group">
+                        <label asp-for="ResumeData.Experiences[i].Company"></label>
+                        <input asp-for="ResumeData.Experiences[i].Company" class="form-control" />
+                        <span asp-validation-for="ResumeData.Experiences[i].Company" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="ResumeData.Experiences[i].Position"></label>
+                                <input asp-for="ResumeData.Experiences[i].Position" class="form-control" />
+                                <span asp-validation-for="ResumeData.Experiences[i].Position" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="ResumeData.Experiences[i].TimePeriod"></label>
+                                <input asp-for="ResumeData.Experiences[i].TimePeriod" class="form-control" />
+                                <span asp-validation-for="ResumeData.Experiences[i].TimePeriod" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Responsibilities (one per line)</label>
+                        <textarea asp-for="ResumeData.Experiences[i].Responsibilities" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    <button type="button" class="btn btn-secondary mb-3" onclick="addExperience()">Add Experience</button>
+
+    <!-- Educations Section -->
+    <h3>Education</h3>
+    <div id="educations">
+        @for (int i = 0; i < Model.ResumeData.Educations.Count; i++)
+        {
+            <div class="education-entry card mb-3">
+                <div class="card-body">
+                    <div class="form-group">
+                        <label asp-for="ResumeData.Educations[i].University"></label>
+                        <input asp-for="ResumeData.Educations[i].University" class="form-control" />
+                        <span asp-validation-for="ResumeData.Educations[i].University" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="ResumeData.Educations[i].Major"></label>
+                                <input asp-for="ResumeData.Educations[i].Major" class="form-control" />
+                                <span asp-validation-for="ResumeData.Educations[i].Major" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label asp-for="ResumeData.Educations[i].Degree"></label>
+                                <input asp-for="ResumeData.Educations[i].Degree" class="form-control" />
+                                <span asp-validation-for="ResumeData.Educations[i].Degree" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label asp-for="ResumeData.Educations[i].Year"></label>
+                                <input asp-for="ResumeData.Educations[i].Year" class="form-control" />
+                                <span asp-validation-for="ResumeData.Educations[i].Year" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    <button type="button" class="btn btn-secondary mb-3" onclick="addEducation()">Add Education</button>
+
+    <!-- Skills & Objective -->
+    <div class="form-group">
+        <label asp-for="ResumeData.Objective"></label>
+        <textarea asp-for="ResumeData.Objective" class="form-control" rows="3"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="ResumeData.Skills"></label>
+        <textarea asp-for="ResumeData.Skills" class="form-control" rows="3"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Generate Document</button>
+</form>
+
+@section Scripts {
+    <script>
+        function addExperience() {
+            const index = document.querySelectorAll('.experience-entry').length;
+            const template = `
+            <div class="experience-entry card mb-3">
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="ResumeData_Experiences_${index}__Company">Company</label>
+                        <input class="form-control" type="text"
+                            id="ResumeData_Experiences_${index}__Company"
+                            name="ResumeData.Experiences[${index}].Company" />
+                        <span class="text-danger field-validation-valid"
+                            data-valmsg-for="ResumeData.Experiences[${index}].Company"
+                            data-valmsg-replace="true"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="ResumeData_Experiences_${index}__Position">Position</label>
+                                <input class="form-control" type="text"
+                                    id="ResumeData_Experiences_${index}__Position"
+                                    name="ResumeData.Experiences[${index}].Position" />
+                                <span class="text-danger field-validation-valid"
+                                    data-valmsg-for="ResumeData.Experiences[${index}].Position"
+                                    data-valmsg-replace="true"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="ResumeData_Experiences_${index}__TimePeriod">Time Period</label>
+                                <input class="form-control" type="text"
+                                    id="ResumeData_Experiences_${index}__TimePeriod"
+                                    name="ResumeData.Experiences[${index}].TimePeriod" />
+                                <span class="text-danger field-validation-valid"
+                                    data-valmsg-for="ResumeData.Experiences[${index}].TimePeriod"
+                                    data-valmsg-replace="true"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Responsibilities (one per line)</label>
+                        <textarea class="form-control" rows="3"
+                            id="ResumeData_Experiences_${index}__Responsibilities"
+                            name="ResumeData.Experiences[${index}].Responsibilities"></textarea>
+                    </div>
+                </div>
+            </div>`;
+            $('#experiences').append(template);
+        }
+
+        function addEducation() {
+            const index = document.querySelectorAll('.education-entry').length;
+            const template = `
+            <div class="education-entry card mb-3">
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="ResumeData_Educations_${index}__University">University</label>
+                        <input class="form-control" type="text"
+                            id="ResumeData_Educations_${index}__University"
+                            name="ResumeData.Educations[${index}].University" />
+                        <span class="text-danger field-validation-valid"
+                            data-valmsg-for="ResumeData.Educations[${index}].University"
+                            data-valmsg-replace="true"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="ResumeData_Educations_${index}__Major">Major</label>
+                                <input class="form-control" type="text"
+                                    id="ResumeData_Educations_${index}__Major"
+                                    name="ResumeData.Educations[${index}].Major" />
+                                <span class="text-danger field-validation-valid"
+                                    data-valmsg-for="ResumeData.Educations[${index}].Major"
+                                    data-valmsg-replace="true"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="ResumeData_Educations_${index}__Degree">Degree</label>
+                                <input class="form-control" type="text"
+                                    id="ResumeData_Educations_${index}__Degree"
+                                    name="ResumeData.Educations[${index}].Degree" />
+                                <span class="text-danger field-validation-valid"
+                                    data-valmsg-for="ResumeData.Educations[${index}].Degree"
+                                    data-valmsg-replace="true"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="ResumeData_Educations_${index}__Year">Year</label>
+                                <input class="form-control" type="text"
+                                    id="ResumeData_Educations_${index}__Year"
+                                    name="ResumeData.Educations[${index}].Year" />
+                                <span class="text-danger field-validation-valid"
+                                    data-valmsg-for="ResumeData.Educations[${index}].Year"
+                                    data-valmsg-replace="true"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            $('#educations').append(template);
+        }
+    </script>
+}
