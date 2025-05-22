@@ -1,14 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<PlatformTarget>x64</PlatformTarget>
+		<Prefer32Bit>false</Prefer32Bit>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="DocumentFormat.OpenXml" Version="3.3.0" />
-    <PackageReference Include="OpenXmlPowerTools" Version="4.5.3.2" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="DocumentFormat.OpenXml" Version="3.3.0" />
+		<PackageReference Include="IronWord" Version="2025.5.3" />
+		<PackageReference Include="OpenXmlPowerTools" Version="4.5.3.2" />
+		<PackageReference Include="Syncfusion.DocIO.Net.Core" Version="29.2.5" />
+	</ItemGroup>
 
 </Project>

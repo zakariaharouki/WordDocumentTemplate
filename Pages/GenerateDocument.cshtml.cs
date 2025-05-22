@@ -1,8 +1,7 @@
-using DocumentFormat.OpenXml.Drawing;
-using DocumentFormat.OpenXml.Packaging;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using OpenXmlPowerTools;
+using Syncfusion.DocIO;
+using Syncfusion.DocIO.DLS;
 using WordDocumentTemplate.models;
 
 namespace WordDocumentTemplate.Pages
@@ -21,7 +20,7 @@ namespace WordDocumentTemplate.Pages
 
         public void OnGet()
         {
-            // Initialize with empty entries
+            // Populate empty entries for dynamic form binding
             ResumeData.Experiences.Add(new ResumeData.Experience());
             ResumeData.Educations.Add(new ResumeData.Education());
         }
@@ -29,102 +28,56 @@ namespace WordDocumentTemplate.Pages
         public IActionResult OnPost()
         {
             if (!ModelState.IsValid)
-            {
                 return Page();
-            }
 
-            var templatePath = System.IO.Path.Combine(_env.ContentRootPath, "Templates", "WordTemplate.docx");
-            var outputPath = System.IO.Path.Combine(_env.WebRootPath, "generated-docs", $"{ResumeData.FullName}_Resume.docx");
+            var templatePath = Path.Combine(_env.ContentRootPath, "Templates", "WordTemplate.docx");
+            var outputFileName = $"{ResumeData.FullName}_Resume.docx";
 
-            Directory.CreateDirectory(System.IO.Path.GetDirectoryName(outputPath));
+            //  STEP 1: Load file content into MemoryStream
+            byte[] fileBytes = System.IO.File.ReadAllBytes(templatePath);
+            using MemoryStream templateStream = new MemoryStream(fileBytes);
 
-            using (var templateStream = new FileStream(templatePath, FileMode.Open, FileAccess.Read))
-            using (var outputStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
-            {
-                var doc = new OpenXmlMemoryStreamDocument(templateStream);
-                using (var wordDocument = doc.GetWordprocessingDocument())
-                {
-                    var body = wordDocument.MainDocumentPart.Document.Body;
-                    var replacements = new Dictionary<string, string>
-                    {
-                        {"{{FullName}}", ResumeData.FullName},
-                        {"{{Title}}", ResumeData.Title},
-                        {"{{City}}", ResumeData.City},
-                        {"{{Phone}}", ResumeData.Phone},
-                        {"{{Email}}", ResumeData.Email},
-                        {"{{Objective}}", ResumeData.Objective},
-                        {"{{Skills}}", ResumeData.Skills},
-                        {"{{Experiences}}", FormatExperiences()},
-                        {"{{Educations}}", FormatEducations()},
-                        {"{{CurrentDate}}", DateTime.Now.ToString("d")}
-                    };
+            //  STEP 2: Load the template into Syncfusion document
+            using WordDocument document = new WordDocument(templateStream, FormatType.Docx);
 
-                    foreach (var paragraph in body.Descendants<Paragraph>())
-                    {
-                        foreach (var run in paragraph.Elements<Run>())
-                        {
-                            foreach (var text in run.Elements<Text>())
-                            {
-                                foreach (var replacement in replacements)
-                                {
-                                    if (text.Text.Contains(replacement.Key))
-                                    {
-                                        text.Text = text.Text.Replace(replacement.Key, replacement.Value);
-                                    }
-                                }
-                            }
-                        }
-                    }
+            //  STEP 3: Replace placeholders
+            document.Replace("{{FullName}}", ResumeData.FullName ?? "", true, true);
+            document.Replace("{{Title}}", ResumeData.Title ?? "", true, true);
+            document.Replace("{{City}}", ResumeData.City ?? "", true, true);
+            document.Replace("{{Phone}}", ResumeData.Phone ?? "", true, true);
+            document.Replace("{{Email}}", ResumeData.Email ?? "", true, true);
+            document.Replace("{{Objective}}", ResumeData.Objective ?? "", true, true);
+            document.Replace("{{Skills}}", ResumeData.Skills ?? "", true, true);
+            document.Replace("{{Experiences}}", FormatExperiences(), true, true);
+            document.Replace("{{Educations}}", FormatEducations(), true, true);
+            document.Replace("{{CurrentDate}}", DateTime.Now.ToString("D"), true, true);
 
-                    wordDocument.MainDocumentPart.Document.Save();
-                }
+            //  STEP 4: Save to stream
+            MemoryStream outputStream = new MemoryStream();
+            document.Save(outputStream, FormatType.Docx);
+            outputStream.Position = 0;
 
-                doc.SaveAs(outputStream);
-            }
-
-            return PhysicalFile(outputPath,
+            //  STEP 5: Return the generated file
+            return File(outputStream,
                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                $"{ResumeData.FullName}_Resume.docx");
+                outputFileName);
         }
+
+
 
         private string FormatExperiences()
         {
             return string.Join("\n\n", ResumeData.Experiences
+                .Where(e => !string.IsNullOrWhiteSpace(e.Company))
                 .Select(e => $"{e.Company} | {e.Position}\t{e.TimePeriod}\n" +
-                             string.Join("\n", e.Responsibilities.Select(r => $"� {r}"))));
+                             string.Join("\n", e.Responsibilities.Select(r => $"• {r}"))));
         }
 
         private string FormatEducations()
         {
-            return string.Join("\r\n\r\n", ResumeData.Educations
-         .Select(e => $"{e.University}, {e.Major}\t{e.Year}\r\nDegree: {e.Degree}"));
-        }
-    }
-
-    public class OpenXmlMemoryStreamDocument : IDisposable
-    {
-        private readonly MemoryStream _documentStream;
-
-        public OpenXmlMemoryStreamDocument(Stream stream)
-        {
-            _documentStream = new MemoryStream();
-            stream.CopyTo(_documentStream);
-        }
-
-        public WordprocessingDocument GetWordprocessingDocument()
-        {
-            return WordprocessingDocument.Open(_documentStream, true);
-        }
-
-        public void SaveAs(Stream stream)
-        {
-            _documentStream.Seek(0, SeekOrigin.Begin);
-            _documentStream.CopyTo(stream);
-        }
-
-        public void Dispose()
-        {
-            _documentStream?.Dispose();
+            return string.Join("\n\n", ResumeData.Educations
+                .Where(e => !string.IsNullOrWhiteSpace(e.University))
+                .Select(e => $"{e.University}, {e.Major}\t{e.Year}\nDegree: {e.Degree}"));
         }
     }
 }
